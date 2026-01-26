@@ -1,0 +1,137 @@
+@startuml BookBus_ERD
+
+' Styles
+skinparam linetype ortho
+
+' ===== ENTITÉS =====
+
+entity "users" as users {
+    * id : INT <<PK>>
+    --
+    * name : VARCHAR(255)
+    * email : VARCHAR(255) <<UNIQUE>>
+    * password : VARCHAR(255)
+    * phone : VARCHAR(20)
+    * role : ENUM('client', 'admin')
+    * email_verified_at : TIMESTAMP
+    * remember_token : VARCHAR(100)
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "bus_companies" as companies {
+    * id : INT <<PK>>
+    --
+    * name : VARCHAR(255)
+    logo : VARCHAR(255)
+    * phone : VARCHAR(20)
+    * email : VARCHAR(255)
+    address : TEXT
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "buses" as buses {
+    * id : INT <<PK>>
+    --
+    * bus_company_id : INT <<FK>>
+    * registration_number : VARCHAR(50) <<UNIQUE>>
+    * model : VARCHAR(100)
+    * total_seats : INT
+    seat_layout : JSON
+    amenities : JSON
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "routes" as routes {
+    * id : INT <<PK>>
+    --
+    * departure_city : VARCHAR(100)
+    * arrival_city : VARCHAR(100)
+    * distance_km : DECIMAL(8,2)
+    * duration_minutes : INT
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "trips" as trips {
+    * id : INT <<PK>>
+    --
+    * route_id : INT <<FK>>
+    * bus_id : INT <<FK>>
+    * departure_time : DATETIME
+    * arrival_time : DATETIME
+    * price : DECIMAL(10,2)
+    * status : ENUM('scheduled', 'in_progress', 'completed', 'cancelled')
+    * available_seats : INT
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "bookings" as bookings {
+    * id : INT <<PK>>
+    --
+    * user_id : INT <<FK>>
+    * trip_id : INT <<FK>>
+    * booking_reference : VARCHAR(20) <<UNIQUE>>
+    * passenger_name : VARCHAR(255)
+    * passenger_phone : VARCHAR(20)
+    * number_of_seats : INT
+    * total_price : DECIMAL(10,2)
+    * status : ENUM('pending', 'confirmed', 'cancelled', 'completed')
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "payments" as payments {
+    * id : INT <<PK>>
+    --
+    * booking_id : INT <<FK>> <<UNIQUE>>
+    * amount : DECIMAL(10,2)
+    * payment_method : ENUM('cash', 'card', 'mobile_money')
+    * transaction_id : VARCHAR(100)
+    * status : ENUM('pending', 'completed', 'failed', 'refunded')
+    paid_at : TIMESTAMP
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+entity "seats" as seats {
+    * id : INT <<PK>>
+    --
+    * booking_id : INT <<FK>>
+    * seat_number : VARCHAR(10)
+    * seat_type : ENUM('standard', 'vip')
+    * created_at : TIMESTAMP
+    * updated_at : TIMESTAMP
+}
+
+' ===== RELATIONS =====
+
+users ||--o{ bookings : "fait"
+companies ||--o{ buses : "possède"
+buses ||--o{ trips : "effectue"
+routes ||--o{ trips : "a"
+trips ||--o{ bookings : "reçoit"
+bookings ||--|| payments : "nécessite"
+bookings ||--|{ seats : "contient"
+
+' ===== NOTES =====
+
+note right of users
+  Table des utilisateurs
+  avec authentification Laravel
+end note
+
+note right of trips
+  Un voyage est une instance
+  d'un trajet à une date précise
+end note
+
+note right of bookings
+  Référence unique générée
+  automatiquement
+end note
+
+@enduml

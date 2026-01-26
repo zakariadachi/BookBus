@@ -1,0 +1,307 @@
+@startuml BookBus_MCD
+
+' Configuration
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam class {
+    BackgroundColor<<Entity>> LightBlue
+    BackgroundColor<<Association>> LightYellow
+    BorderColor Black
+}
+
+' ===== ENTITÉS =====
+
+entity "UTILISATEUR" as user <<Entity>> {
+    * <u>id_utilisateur</u> : Entier
+    --
+    * nom : Texte
+    * email : Texte
+    * mot_de_passe : Texte
+    * telephone : Texte
+    * role : Texte
+    date_verification_email : Date
+    jeton_souvenir : Texte
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "COMPAGNIE_BUS" as company <<Entity>> {
+    * <u>id_compagnie</u> : Entier
+    --
+    * nom : Texte
+    logo : Texte
+    * telephone : Texte
+    * email : Texte
+    adresse : Texte
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "BUS" as bus <<Entity>> {
+    * <u>id_bus</u> : Entier
+    --
+    * numero_immatriculation : Texte
+    * modele : Texte
+    * nombre_sieges_total : Entier
+    disposition_sieges : JSON
+    equipements : JSON
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "TRAJET" as route <<Entity>> {
+    * <u>id_trajet</u> : Entier
+    --
+    * ville_depart : Texte
+    * ville_arrivee : Texte
+    * distance_km : Decimal
+    * duree_minutes : Entier
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "VOYAGE" as trip <<Entity>> {
+    * <u>id_voyage</u> : Entier
+    --
+    * heure_depart : DateHeure
+    * heure_arrivee : DateHeure
+    * prix : Decimal
+    * statut : Texte
+    * sieges_disponibles : Entier
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "RESERVATION" as booking <<Entity>> {
+    * <u>id_reservation</u> : Entier
+    --
+    * reference_reservation : Texte
+    * nom_passager : Texte
+    * telephone_passager : Texte
+    * nombre_sieges : Entier
+    * prix_total : Decimal
+    * statut : Texte
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "PAIEMENT" as payment <<Entity>> {
+    * <u>id_paiement</u> : Entier
+    --
+    * montant : Decimal
+    * methode_paiement : Texte
+    numero_transaction : Texte
+    * statut : Texte
+    date_paiement : Date
+    date_creation : Date
+    date_modification : Date
+}
+
+entity "SIEGE" as seat <<Entity>> {
+    * <u>id_siege</u> : Entier
+    --
+    * numero_siege : Texte
+    * type_siege : Texte
+    date_creation : Date
+    date_modification : Date
+}
+
+' ===== ASSOCIATIONS =====
+
+class "POSSEDER" as possess <<Association>> {
+}
+
+class "EFFECTUER" as perform <<Association>> {
+}
+
+class "CONCERNER" as concern <<Association>> {
+}
+
+class "FAIRE" as make <<Association>> {
+}
+
+class "RESERVER" as reserve <<Association>> {
+}
+
+class "PAYER" as pay <<Association>> {
+}
+
+class "OCCUPER" as occupy <<Association>> {
+}
+
+' ===== RELATIONS =====
+
+' COMPAGNIE possède BUS
+company "1,1" -- "0,N" possess
+possess -- "0,N" bus
+possess : possede >
+
+' BUS effectue VOYAGE
+bus "1,1" -- "0,N" perform
+perform -- "0,N" trip
+perform : effectue >
+
+' TRAJET concerne VOYAGE
+route "1,1" -- "0,N" concern
+concern -- "0,N" trip
+concern : concerne >
+
+' UTILISATEUR fait RESERVATION
+user "1,1" -- "0,N" make
+make -- "0,N" booking
+make : fait >
+
+' VOYAGE reçoit RESERVATION
+trip "1,1" -- "0,N" reserve
+reserve -- "0,N" booking
+reserve : recoit >
+
+' RESERVATION nécessite PAIEMENT
+booking "1,1" -- "1,1" pay
+pay -- "1,1" payment
+pay : necessite >
+
+' RESERVATION contient SIEGE
+booking "1,1" -- "1,N" occupy
+occupy -- "1,N" seat
+occupy : contient >
+
+' ===== NOTES EXPLICATIVES =====
+
+note right of user
+  **Rôles possibles:**
+  - client
+  - admin
+  
+  **Contraintes:**
+  - Email unique
+  - Téléphone obligatoire
+end note
+
+note right of company
+  **Exemples:**
+  - CTM
+  - Supratours
+  - SATAS
+  - Pullman du Sud
+end note
+
+note right of route
+  **Exemples de trajets:**
+  - Casablanca → Marrakech (241 km)
+  - Casablanca → Fès (298 km)
+  - Casablanca → Tanger (338 km)
+end note
+
+note right of trip
+  **Statuts possibles:**
+  - scheduled (programmé)
+  - in_progress (en cours)
+  - completed (terminé)
+  - cancelled (annulé)
+end note
+
+note right of booking
+  **Statuts possibles:**
+  - pending (en attente)
+  - confirmed (confirmé)
+  - cancelled (annulé)
+  - completed (terminé)
+  
+  **Référence:**
+  Format: BB-YYYY-XXX
+end note
+
+note right of payment
+  **Méthodes de paiement:**
+  - cash (espèces)
+  - card (carte bancaire)
+  - mobile_money (paiement mobile)
+  
+  **Statuts:**
+  - pending, completed
+  - failed, refunded
+end note
+
+note right of seat
+  **Types de sièges:**
+  - standard
+  - vip
+  
+  **Format numéro:**
+  Ex: A12, B5, C8
+end note
+
+' ===== CARDINALITÉS EXPLIQUÉES =====
+
+note bottom of possess
+  Une compagnie possède
+  0 ou plusieurs bus.
+  Un bus appartient à
+  une seule compagnie.
+end note
+
+note bottom of perform
+  Un bus effectue
+  0 ou plusieurs voyages.
+  Un voyage est effectué
+  par un seul bus.
+end note
+
+note bottom of concern
+  Un trajet concerne
+  0 ou plusieurs voyages.
+  Un voyage concerne
+  un seul trajet.
+end note
+
+note bottom of make
+  Un utilisateur fait
+  0 ou plusieurs réservations.
+  Une réservation est faite
+  par un seul utilisateur.
+end note
+
+note bottom of reserve
+  Un voyage reçoit
+  0 ou plusieurs réservations.
+  Une réservation concerne
+  un seul voyage.
+end note
+
+note bottom of pay
+  Une réservation nécessite
+  un seul paiement.
+  Un paiement concerne
+  une seule réservation.
+end note
+
+note bottom of occupy
+  Une réservation contient
+  1 ou plusieurs sièges.
+  Un siège appartient à
+  une seule réservation.
+end note
+
+' ===== LÉGENDE =====
+
+legend right
+  **MODÈLE CONCEPTUEL DE DONNÉES (MCD)**
+  **Projet: BookBus**
+  
+  **Notation Merise:**
+  - Entités en bleu
+  - Associations en jaune
+  - <u>Clés primaires</u> soulignées
+  - * = Attribut obligatoire
+  
+  **Cardinalités:**
+  - 0,N = Zéro ou plusieurs
+  - 1,1 = Exactement un
+  - 1,N = Un ou plusieurs
+  
+  **Date:** 26/01/2026
+  **Version:** 1.0
+end legend
+
+@enduml

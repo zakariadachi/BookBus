@@ -1,0 +1,67 @@
+@startuml BookBus_UseCase_Diagram
+
+left to right direction
+skinparam packageStyle rectangle
+
+' Acteurs
+actor "Client" as client
+actor "Administrateur" as admin
+
+' Système
+rectangle "BookBus - Système de Réservation" {
+    
+    ' Cas d'utilisation Client
+    usecase "S'inscrire" as UC1
+    usecase "Se connecter" as UC2
+    usecase "Rechercher un trajet" as UC3
+    usecase "Réserver un billet" as UC4
+    usecase "Sélectionner des sièges" as UC5
+    usecase "Effectuer un paiement" as UC6
+    usecase "Consulter mes réservations" as UC7
+    usecase "Annuler une réservation" as UC8
+    
+    ' Cas d'utilisation Admin
+    usecase "Gérer les compagnies" as UC9
+    usecase "Gérer les bus" as UC10
+    usecase "Gérer les trajets" as UC11
+    usecase "Gérer les voyages" as UC12
+    usecase "Consulter les réservations" as UC13
+    usecase "Générer des rapports" as UC14
+}
+
+' Relations Client
+client --> UC1
+client --> UC2
+client --> UC3
+client --> UC4
+client --> UC7
+client --> UC8
+
+' Relations Admin
+admin --> UC2
+admin --> UC9
+admin --> UC10
+admin --> UC11
+admin --> UC12
+admin --> UC13
+admin --> UC14
+
+' Relations include/extend
+UC4 .> UC5 : <<include>>
+UC4 .> UC6 : <<include>>
+UC8 .> UC6 : <<extend>>\nremboursement
+
+' Notes
+note right of UC4
+  La réservation inclut
+  obligatoirement la sélection
+  de sièges et le paiement
+end note
+
+note right of admin
+  L'administrateur peut
+  également effectuer toutes
+  les actions d'un client
+end note
+
+@enduml
