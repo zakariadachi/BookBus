@@ -42,14 +42,17 @@ Simplifier la réservation de billets de bus pour les voyageurs marocains et fac
 
 8 tables principales :
 
-- `users` - Utilisateurs
-- `bus_companies` - Compagnies de bus
-- `buses` - Véhicules
-- `routes` - Trajets entre villes
-- `trips` - Voyages programmés
-- `bookings` - Réservations
-- `payments` - Paiements
-- `seats` - Sièges réservés
+- `Utilisateur` - Utilisateurs.
+- `Route` - Trajets entre villes.
+- `Ville` - Villes.
+- `Reservation` - Réservations.
+- `Siege` - Sièges.
+- `Ticket` - Billets.
+- `Bus` - Bus / Véhicules.
+- `Voyage` - Voyages programmés.
+- `Tarif` - Tarifs.
+- `paiement` - Paiements.
+
 
 ## 🌍 Compagnies Incluses
 
