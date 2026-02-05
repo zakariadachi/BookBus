@@ -18,7 +18,7 @@
                         {{ App\Models\Ville::find(request('arrival_city'))->nom ?? '?' }}
                     </h2>
                     <p class="text-sm text-gray-500">
-                        {{ \Carbon\Carbon::parse(request('date'))->format('D d M Y') }} &bull; {{ request('passengers') }} Voyageur(s)
+                        {{ \Carbon\Carbon::parse(request('date'))->format('D d M Y') }}
                     </p>
                 </div>
             </div>
@@ -30,131 +30,255 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- Sidebar Filters -->
-            <div class="lg:col-span-3 space-y-6">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="font-bold text-gray-900 mb-4 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                        </svg>
-                        Filtres
-                    </h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Escales</h4>
-                            <label class="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 cursor-pointer">
-                                <input type="checkbox" class="rounded text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span>Trajets directs uniquement</span>
-                            </label>
+        <form action="{{ route('search.results') }}" method="GET" id="filterForm">
+            <input type="hidden" name="departure_city" value="{{ request('departure_city') }}">
+            <input type="hidden" name="arrival_city" value="{{ request('arrival_city') }}">
+            <input type="hidden" name="date" value="{{ request('date') }}">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Filters -->
+                <div class="lg:col-span-3 space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="font-bold text-gray-900 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                </svg>
+                                Filtres
+                            </h3>
+                            <a href="{{ route('search.results', request()->only(['departure_city', 'arrival_city', 'date', 'passengers'])) }}" class="text-xs text-blue-600 hover:underline">Réinitialiser</a>
                         </div>
                         
-                        <div class="pt-4 border-t border-gray-100">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Compagnies</h4>
-                            <label class="flex items-center space-x-2 text-sm text-gray-600">
-                                <input type="checkbox" checked class="rounded text-blue-600 border-gray-300">
-                                <span>SATAS Premier</span>
-                            </label>
-                             <label class="flex items-center space-x-2 text-sm text-gray-600 mt-2">
-                                <input type="checkbox" checked class="rounded text-blue-600 border-gray-300">
-                                <span>SATAS Confort</span>
-                            </label>
+                        <div class="space-y-6">
+                            <!-- Classes de Bus -->
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3">Classe de Bus</h4>
+                                <div class="space-y-2">
+                                    @php
+                                        $classesToShow = !empty($availableClasses) ? $availableClasses : ['Standard', 'Confort', 'Premium'];
+                                    @endphp
+                                    @foreach($classesToShow as $class)
+                                        <label class="flex items-center group cursor-pointer">
+                                            <input type="checkbox" name="classes[]" value="{{ $class }}" 
+                                                {{ is_array(request('classes')) && in_array($class, request('classes')) ? 'checked' : '' }}
+                                                onchange="this.form.submit()"
+                                                class="rounded text-blue-600 focus:ring-blue-500 border-gray-300 transition">
+                                            <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 transition">{{ $class }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Heure de Départ -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <h4 class="text-sm font-semibold text-gray-700 mb-3">Heure de départ</h4>
+                                <div class="space-y-2">
+                                    @foreach(['matin' => 'Matin (05:00 - 12:00)', 'apres-midi' => 'Après-midi (12:00 - 18:00)', 'soir' => 'Soir (18:00 - 00:00)'] as $value => $label)
+                                        <label class="flex items-center group cursor-pointer">
+                                            <input type="radio" name="departure_time" value="{{ $value }}" 
+                                                {{ request('departure_time') == $value ? 'checked' : '' }}
+                                                onchange="this.form.submit()"
+                                                class="text-blue-600 focus:ring-blue-500 border-gray-300 transition">
+                                            <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-900 transition">{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Prix Maximum -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-semibold text-gray-700">Prix maximum</h4>
+                                    <span class="text-blue-600 font-bold text-sm" id="priceValue">{{ request('max_price', 500) }} MAD</span>
+                                </div>
+                                <input type="range" name="max_price" min="50" max="500" step="10" 
+                                    value="{{ request('max_price', 500) }}"
+                                    class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                    id="priceRange"
+                                    oninput="document.getElementById('priceValue').innerText = this.value + ' MAD'"
+                                    onchange="this.form.submit()">
+                                <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+                                    <span>50 MAD</span>
+                                    <span>500 MAD</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Results Feed -->
-            <div class="lg:col-span-9 space-y-4">
-                @forelse($results as $result)
-                    <div class="group bg-white rounded-2xl shadow-sm hover:shadow-lg hover:border-blue-300 border border-gray-200 transition-all duration-300 overflow-hidden relative">
-                         @if($loop->first)
-                            <div class="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">
-                                Meilleur Prix
-                            </div>
-                        @endif
+                <!-- Results Feed -->
+                <div class="lg:col-span-9">
+                    <!-- Results Header / Sorting -->
+                    <div class="flex items-center justify-between mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div class="text-sm text-gray-600">
+                            <span class="font-bold text-gray-900">{{ $results->count() }}</span> trajets trouvés
+                        </div>
                         
-                        <div class="p-6">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <!-- Times & Route -->
-                                <div class="flex-1 flex items-center justify-between md:justify-start gap-8">
-                                    <div class="text-center md:text-left min-w-[80px]">
-                                        <div class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($result->heure_depart)->format('H:i') }}</div>
-                                        <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ $result->departureGare->ville->nom }}</div>
-                                        <div class="text-xs text-gray-400 mt-1 truncate max-w-[100px]" title="{{ $result->departureGare->nom }}">{{ $result->departureGare->nom }}</div>
-                                    </div>
-
-                                    <!-- Duration Line -->
-                                    <div class="flex-1 flex flex-col items-center max-w-[160px]">
-                                        <div class="text-xs text-gray-500 mb-1">
-                                            {{ \Carbon\Carbon::parse($result->heure_depart)->diff(\Carbon\Carbon::parse($result->heure_arrivee))->format('%Hh %I') }}
-                                        </div>
-                                        <div class="w-full h-px bg-gray-300 relative flex items-center justify-center">
-                                            <div class="w-2 h-2 rounded-full bg-gray-400 absolute left-0"></div>
-                                            <div class="w-2 h-2 rounded-full bg-gray-400 absolute right-0"></div>
-                                            <!-- Icon in middle -->
-                                            <div class="bg-white px-1">
-                                                <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="mt-1">
-                                            @if(isset($result->is_direct) && !$result->is_direct)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    1 Escale
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                    Direct
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="text-center md:text-right min-w-[80px]">
-                                        <div class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($result->heure_arrivee)->format('H:i') }}</div>
-                                        <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ $result->arrivalGare->ville->nom }}</div>
-                                        <div class="text-xs text-gray-400 mt-1 truncate max-w-[100px]" title="{{ $result->arrivalGare->nom }}">{{ $result->arrivalGare->nom }}</div>
-                                    </div>
-                                </div>
-
-                                <!-- Action Side -->
-                                <div class="flex items-center justify-between md:flex-col md:items-end md:border-l md:pl-8 border-gray-100 gap-2 min-w-[120px]">
-                                    <div class="text-left md:text-right">
-                                        <div class="text-sm text-gray-400 line-through">
-                                            {{ number_format($result->tarif * 1.2, 0) }} MAD
-                                        </div>
-                                        <div class="text-3xl font-extrabold text-orange-600">
-                                            {{ number_format($result->tarif, 0) }} <span class="text-sm font-normal text-gray-600">MAD</span>
-                                        </div>
-                                    </div>
-                                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow transition-colors flex items-center group-hover:scale-105 transform duration-200">
-                                        Choisir
-                                        <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500 font-medium">Trier par:</span>
+                            <select name="sort_by" onchange="this.form.submit()" class="text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 py-1.5 pl-3 pr-8 bg-gray-50 font-medium">
+                                <option value="price_asc" {{ request('sort_by') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
+                                <option value="price_desc" {{ request('sort_by') == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
+                                <option value="time_asc" {{ request('sort_by') == 'time_asc' ? 'selected' : '' }}>Heure de départ</option>
+                                <option value="duration_asc" {{ request('sort_by') == 'duration_asc' ? 'selected' : '' }}>Durée la plus courte</option>
+                            </select>
                         </div>
                     </div>
-                @empty
-                    <div class="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-                        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun trajet trouvé</h3>
-                        <p class="mt-2 text-gray-500 max-w-sm mx-auto">Nous n'avons trouvé aucun résultat pour votre recherche. Essayez de changer de date ou de ville.</p>
-                        <a href="{{ route('home') }}" class="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                            Nouvelle recherche
-                        </a>
+
+                    <div class="space-y-4 relative" id="resultsContainer">
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white bg-opacity-60 z-20 flex items-center justify-center rounded-xl transition-opacity duration-300">
+                            <div class="flex flex-col items-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-2"></div>
+                                <span class="text-blue-600 font-medium animate-pulse">Filtrage en cours...</span>
+                            </div>
+                        </div>
+
+                                @forelse($results as $result)
+                            <div class="group bg-white rounded-2xl shadow-sm hover:shadow-lg hover:border-blue-300 border border-gray-200 transition-all duration-300 overflow-hidden relative fade-in">
+                                
+                                <div class="p-6 cursor-pointer group-hover:bg-blue-50/30 transition-colors">
+                                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <!-- Times & Route -->
+                                        <div class="flex-1 flex items-center justify-between md:justify-start gap-8">
+                                            <div class="text-center md:text-left min-w-[80px]">
+                                                <div class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($result->heure_depart)->format('H:i') }}</div>
+                                                <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ $result->departureGare->ville->nom }}</div>
+                                                <div class="text-xs text-gray-400 mt-1 truncate max-w-[100px]" title="{{ $result->departureGare->nom }}">{{ $result->departureGare->nom }}</div>
+                                            </div>
+
+                                            <!-- Duration Line -->
+                                            <div class="flex-1 flex flex-col items-center max-w-[160px]">
+                                                <div class="text-xs text-gray-500 mb-1 font-medium">
+                                                    {{ floor($result->duration_minutes / 60) }}h {{ $result->duration_minutes % 60 }}min
+                                                </div>
+                                                <div class="w-full h-0.5 bg-gray-200 relative flex items-center justify-center">
+                                                    <div class="w-2 h-2 rounded-full bg-blue-500 absolute left-0 shadow-sm border border-white"></div>
+                                                    <div class="w-2 h-2 rounded-full bg-blue-500 absolute right-0 shadow-sm border border-white"></div>
+                                                    <!-- Icon in middle -->
+                                                    <div class="bg-white px-2 duration-icon">
+                                                        <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    @if(isset($result->is_direct) && !$result->is_direct)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 uppercase tracking-tighter shadow-sm">
+                                                            1 Escale à {{ $result->segments[0]->arrivalGare->ville->nom }}
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase tracking-tighter shadow-sm">
+                                                            Direct
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <div class="text-center md:text-right min-w-[80px]">
+                                                <div class="text-2xl font-bold text-gray-900">{{ \Carbon\Carbon::parse($result->heure_arrivee)->format('H:i') }}</div>
+                                                <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">{{ $result->arrivalGare->ville->nom }}</div>
+                                                <div class="text-xs text-gray-400 mt-1 truncate max-w-[100px]" title="{{ $result->arrivalGare->nom }}">{{ $result->arrivalGare->nom }}</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action Side -->
+                                        <div class="flex items-center justify-between md:flex-col md:items-end md:border-l md:pl-8 border-gray-100 gap-2 min-w-[140px]">
+                                            <div class="text-left md:text-right">
+                                                <div class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mb-1">{{ $result->bus->classe }}</div>
+                                                <div class="text-3xl font-black text-blue-900 tracking-tight">
+                                                    {{ number_format($result->tarif, 0) }} <span class="text-xs font-medium text-gray-500">MAD</span>
+                                                </div>
+                                                <div class="text-[10px] text-gray-400 flex items-center justify-end gap-1">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+                                                    {{ $result->bus->capacite }} places disponibles
+                                                </div>
+                                                <div class="text-[10px] text-gray-400 flex items-center justify-end gap-1">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M5 13l4 4L19 7"/></svg>
+                                                    Annulation gratuite
+                                                </div>
+                                            </div>
+                                            <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center group-hover:px-10 transform duration-300">
+                                                Réserver
+                                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Amenities -->
+                                    <div class="mt-4 pt-4 border-t border-gray-50 flex gap-4 text-gray-400 text-[10px]">
+                                        <span>Wi-Fi @if($result->bus->classe != 'Premium') limité @endif</span>
+                                        <span>Prises @if($result->bus->classe == 'Standard') non dispos @endif</span>
+                                        <span>Billet Mobile</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300 fade-in">
+                                <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">Aucun itinéraire trouvé</h3>
+                                <p class="text-gray-500 max-w-sm mx-auto mb-8">
+                                    Nous n'avons trouvé aucun bus pour le 
+                                    <span class="font-bold text-blue-600">{{ \Carbon\Carbon::parse(request('date'))->format('d/m/Y') }}</span>. 
+                                    Essayez d'élargir votre recherche ou de réinitialiser les filtres.
+                                </p>
+                                @if(isset($suggested_date))
+                                    <p class="mt-4 text-sm text-blue-600">
+                                        Prochaine disponibilité le : <a href="{{ route('search.results', array_merge(request()->all(), ['date' => $suggested_date])) }}" class="font-bold underline">{{ \Carbon\Carbon::parse($suggested_date)->format('d/m/Y') }}</a>
+                                    </p>
+                                @endif
+                                <a href="{{ route('search.results', request()->only(['departure_city', 'arrival_city', 'date', 'passengers'])) }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition mt-6">
+                                    Réinitialiser les filtres
+                                </a>
+                            </div>
+                        @endforelse
                     </div>
-                @endforelse
+                </div>
             </div>
-        </div>
+        </form>
+
+        <style>
+            .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; opacity: 0; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+            
+            .group:hover .duration-icon { transform: translateX(5px); transition: transform 0.3s ease; }
+            
+            #filterForm input[type="radio"]:checked + span,
+            #filterForm input[type="checkbox"]:checked + span {
+                color: #2563eb;
+                font-weight: 600;
+            }
+
+            input[type=range]::-webkit-slider-thumb {
+                height: 20px;
+                width: 20px;
+                border-radius: 50%;
+                background: #2563eb;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+        </style>
+
+        <script>
+            document.addEventListener('submit', function(e) {
+                if (e.target.id === 'filterForm') {
+                    document.getElementById('loadingOverlay').classList.remove('hidden');
+                }
+            });
+
+            // Prevent scroll jump on submit
+            if (window.location.search.includes('classes') || window.location.search.includes('max_price') || window.location.search.includes('sort_by')) {
+                const resultsTop = document.getElementById('resultsContainer').getBoundingClientRect().top + window.scrollY - 100;
+                window.scrollTo({ top: resultsTop, behavior: 'smooth' });
+            }
+        </script>
     </div>
 </div>
 @endsection

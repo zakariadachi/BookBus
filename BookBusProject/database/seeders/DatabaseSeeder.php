@@ -27,8 +27,9 @@ class DatabaseSeeder extends Seeder
         $gareRabat = Gare::create(['nom' => 'Gare Routière Kamra', 'adresse' => 'Kamra', 'ville_id' => $rabat->id]);
 
         // Create Buses
-        $bus1 = Bus::create(['immatriculation' => '1234-A-50', 'capacite' => 50, 'classe' => 'VIP']);
+        $bus1 = Bus::create(['immatriculation' => '1234-A-50', 'capacite' => 50, 'classe' => 'Premium']);
         $bus2 = Bus::create(['immatriculation' => '5678-B-40', 'capacite' => 40, 'classe' => 'Standard']);
+        $bus3 = Bus::create(['immatriculation' => '9012-C-45', 'capacite' => 45, 'classe' => 'Confort']);
 
         // Create Routes
         // Casablanca -> Marrakech
@@ -115,6 +116,18 @@ class DatabaseSeeder extends Seeder
                 'heure_arrivee' => '18:45:00',
                 'tarif' => 140.00,
                 'distance_km' => 327
+            ]);
+
+            // Add an extra direct segment Casa -> Marrakech with Confort bus
+            Segment::create([
+                'bus_id' => $bus3->id,
+                'programme_id' => $prog1->id,
+                'departure_gare_id' => $gareCasa->id,
+                'arrival_gare_id' => $gareMarrakech->id,
+                'heure_depart' => '10:00:00',
+                'heure_arrivee' => '13:30:00',
+                'tarif' => 135.00,
+                'distance_km' => 240
             ]);
         }
     }
