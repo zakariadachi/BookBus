@@ -49,12 +49,12 @@ class SearchController extends Controller
             ->get();
 
         foreach ($directSegments as $segment) {
-            $tarif = $segment->tarif;
+            $tarifUnitaire = $segment->tarif;
             $class = strtolower(trim($segment->bus->classe));
             if ($class === 'confort') {
-                $tarif *= 1.1;
+                $tarifUnitaire *= 1.1;
             } elseif ($class === 'premium') {
-                $tarif *= 1.2;
+                $tarifUnitaire *= 1.2;
             }
 
             $results->push((object)[
@@ -64,7 +64,7 @@ class SearchController extends Controller
                 'arrivalGare' => $segment->arrivalGare,
                 'heure_depart' => $segment->heure_depart,
                 'heure_arrivee' => $segment->heure_arrivee,
-                'tarif' => $tarif,
+                'tarif' => $tarifUnitaire,
                 'bus' => $segment->bus,
                 'is_direct' => true,
                 'duration_minutes' => \Carbon\Carbon::parse($segment->heure_depart)->diffInMinutes(\Carbon\Carbon::parse($segment->heure_arrivee))

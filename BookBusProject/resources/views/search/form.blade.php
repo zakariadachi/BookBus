@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <!-- Search Card (Floating) -->
+    <!-- Search Card  -->
     <div class="flex-grow -mt-20 md:-mt-24 px-4 sm:px-6 lg:px-8 relative z-10 pb-12">
         <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             <div class="p-6 md:p-8">
@@ -147,6 +147,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
                     Paiement 100% sécurisé
+                    
                 </div>
             </div>
         </div>
@@ -163,7 +164,7 @@
             const departure = departureSelect.value;
             const arrival = arrivalSelect.value;
             
-            // Disable logic (simplified)
+            // Disable logic
             Array.from(arrivalSelect.options).forEach(opt => opt.disabled = (opt.value === departure && departure !== ''));
             Array.from(departureSelect.options).forEach(opt => opt.disabled = (opt.value === arrival && arrival !== ''));
         }
