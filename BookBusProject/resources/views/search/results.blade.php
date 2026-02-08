@@ -198,12 +198,33 @@
                                                     Annulation gratuite
                                                 </div>
                                             </div>
-                                            <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center group-hover:px-10 transform duration-300">
-                                                Réserver
-                                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                                </svg>
-                                            </button>
+                                            @php
+                                                $requestedPassengers = (int)request('passengers', 1);
+                                                $isAvailable = $result->bus->capacite >= $requestedPassengers;
+                                                $bookingUrl = route('search.results', array_merge(request()->all(), [
+                                                    'segment_ids' => implode(',', collect($result->segments)->pluck('id')->toArray()),
+                                                    'total_price' => $result->tarif
+                                                ]));
+                                            @endphp
+
+                                            @if($isAvailable)
+                                                <a href="{{ $bookingUrl }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center group-hover:px-10 transform duration-300">
+                                                    Réserver
+                                                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                                    </svg>
+                                                </a>
+                                            @else
+                                                <div class="flex flex-col items-end">
+                                                    <button type="button" disabled class="bg-gray-300 text-gray-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl flex items-center">
+                                                        Complet
+                                                        <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </button>
+                                                    <p class="text-[10px] text-red-500 mt-1 font-bold">Places insuffisantes</p>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                     

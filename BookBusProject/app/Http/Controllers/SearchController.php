@@ -27,6 +27,7 @@ class SearchController extends Controller
             'departure_time' => 'nullable|string',
             'max_price' => 'nullable|numeric|min:50|max:500',
             'sort_by' => 'nullable|string',
+            'passengers' => 'nullable|integer|min:1|max:10',
         ]);
 
         $depCityId = $request->departure_city;

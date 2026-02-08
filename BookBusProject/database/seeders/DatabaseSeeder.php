@@ -118,7 +118,6 @@ class DatabaseSeeder extends Seeder
                 'distance_km' => 327
             ]);
 
-            // Add an extra direct segment Casa -> Marrakech with Confort bus
             Segment::create([
                 'bus_id' => $bus3->id,
                 'programme_id' => $prog1->id,

@@ -102,7 +102,7 @@
                         </div>
 
                         <!-- Date -->
-                        <div class="md:col-span-4">
+                        <div class="md:col-span-2">
                             <label for="date" class="block text-sm font-semibold text-gray-700 mb-2">Date du voyage</label>
                             <div class="relative group">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -112,6 +112,20 @@
                                 </div>
                                 <input type="date" name="date" id="date" required min="{{ date('Y-m-d') }}" value="{{ request('date', date('Y-m-d')) }}"
                                     class="block w-full pl-10 pr-3 py-3 text-base border @error('date') border-red-500 @else border-gray-200 @enderror focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg bg-gray-50 hover:bg-white transition-all duration-200">
+                            </div>
+                        </div>
+
+                        <!-- Passengers -->
+                        <div class="md:col-span-2">
+                            <label for="passengers" class="block text-sm font-semibold text-gray-700 mb-2">Voyageurs</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                <input type="number" name="passengers" id="passengers" min="1" max="10" required value="{{ request('passengers', 1) }}"
+                                    class="block w-full pl-10 pr-3 py-3 text-base border @error('passengers') border-red-500 @else border-gray-200 @enderror focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg bg-gray-50 hover:bg-white transition-all duration-200">
                             </div>
                         </div>
 
