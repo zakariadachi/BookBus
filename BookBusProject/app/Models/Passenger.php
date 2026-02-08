@@ -9,7 +9,16 @@ class Passenger extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['booking_id', 'nom', 'prenom', 'type'];
+    protected $fillable = [
+        'booking_id', 
+        'nom_complet', 
+        'cin', 
+        'date_naissance', 
+        'type', 
+        'insurance', 
+        'snack_box', 
+        'premium_seat'
+    ];
 
     public function booking()
     {

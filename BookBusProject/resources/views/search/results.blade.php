@@ -201,9 +201,10 @@
                                             @php
                                                 $requestedPassengers = (int)request('passengers', 1);
                                                 $isAvailable = $result->bus->capacite >= $requestedPassengers;
-                                                $bookingUrl = route('search.results', array_merge(request()->all(), [
+                                                $bookingUrl = route('booking.create', array_merge(request()->all(), [
                                                     'segment_ids' => implode(',', collect($result->segments)->pluck('id')->toArray()),
-                                                    'total_price' => $result->tarif
+                                                    'total_price' => $result->tarif,
+                                                    'passengers' => request('passengers', 1)
                                                 ]));
                                             @endphp
 

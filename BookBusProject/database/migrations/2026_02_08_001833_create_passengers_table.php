@@ -11,9 +11,13 @@ return new class extends Migration
         Schema::create('passengers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained()->onDelete('cascade');
-            $table->string('nom');
-            $table->string('prenom');
+            $table->string('nom_complet');
+            $table->string('cin');
+            $table->date('date_naissance');
             $table->string('type')->default('Adulte');
+            $table->boolean('insurance')->default(false);
+            $table->boolean('snack_box')->default(false);
+            $table->boolean('premium_seat')->default(false);
             $table->timestamps();
         });
     }
