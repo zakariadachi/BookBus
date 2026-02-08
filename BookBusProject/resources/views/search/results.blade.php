@@ -46,7 +46,7 @@
                                 </svg>
                                 Filtres
                             </h3>
-                            <a href="{{ route('search.results', request()->only(['departure_city', 'arrival_city', 'date', 'passengers'])) }}" class="text-xs text-blue-600 hover:underline">Réinitialiser</a>
+                            <a href="{{ route('search.results', request()->only(['departure_city', 'arrival_city', 'date'])) }}" class="text-xs text-blue-600 hover:underline">Réinitialiser</a>
                         </div>
                         
                         <div class="space-y-6">
